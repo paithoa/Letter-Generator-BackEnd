@@ -1,19 +1,35 @@
 from flask import Flask
 from flask import request
-
+from flask_cors import CORS,cross_origin
 from fpdf import FPDF,HTMLMixin
 
 app = Flask(__name__)
+cors=CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 import datetime
+import json
+
 now = datetime.datetime.now()
 
+@app.route("/submitletter",methods=['POST'])
+@cross_origin()
+def post_data():
+    if request.method == 'POST':
+        data = request.data
+        print(data)
+        return "Posted"
+
+    else:
+        return "not posted"
 
 
 
-@app.route("/",methods=['GET','POST'])
+@app.route("/",methods=['GET'])
+@cross_origin()
 def get_data():
-    data = request.data
-    print(data)
+    x =  '{ "name":"John", "age":30, "city":"New York"}'
+    data = "hello world"
+    return x
 class MyFPDF(FPDF, HTMLMixin):
     pass
 def generate_letter():
@@ -100,6 +116,3 @@ def generate_pdf(patient_dob,clinic_name,clinic_address,date_only,header,first,s
 
 
     pdf.output("simple_demo.pdf")
-
-
-generate_letter();
