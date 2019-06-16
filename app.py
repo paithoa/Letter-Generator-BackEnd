@@ -1,14 +1,19 @@
 from flask import Flask
+from flask import request
+
 from fpdf import FPDF,HTMLMixin
 
-##app = Flask(__name__)
+app = Flask(__name__)
 import datetime
 now = datetime.datetime.now()
 
 
 
 
-##@app.route("/")
+@app.route("/",methods=['GET','POST'])
+def get_data():
+    data = request.data
+    print(data)
 class MyFPDF(FPDF, HTMLMixin):
     pass
 def generate_letter():
@@ -21,10 +26,10 @@ def generate_letter():
     gender = "Male"
     if(gender == "Male"):
         gender_pronoun = "him"
-    
+
     else:
         gender_pronoun = "her"
-    
+
     # create gender function if m  -> male f-> female
     clinic_name = "Quahog Hospital "
     clinic_address = "Old Trafford road "
@@ -38,11 +43,11 @@ def generate_letter():
     patient_address = "West Virginia"
     patient_dob = "30/12/1996"
     header = "Dr. " + doctor_first_name + " " + doctor_last_name
-    first_paragraph = "Dear Dr." + doctor_last_name  
+    first_paragraph = "Dear Dr." + doctor_last_name
     second_paragraph = "Re: " + patient_first_name + " " +  patient_last_name+ " of " + patient_address
-    third_paragraph = "Thank you for the Medicare referral for " + patient_first_name 
+    third_paragraph = "Thank you for the Medicare referral for " + patient_first_name
     fourth_paragraph = "Please find enclosed the first report for the " + year + " calendar year under the Allied Health"
-    fourth_paragraph_cont = "Care Referral Program "+ date_only + " . " 
+    fourth_paragraph_cont = "Care Referral Program "+ date_only + " . "
     fifth_paragraph = "Should you have any queries regarding " + patient_first_name + " therapy, please do not"
     fifth_paragraph_cont = "hesitate to contact me, as I would welcome the opportunity to discuss "+gender_pronoun+" progress."
     sixth_paragraph = "Yours sincerely,"
@@ -50,7 +55,7 @@ def generate_letter():
     print(header)
     return (first_paragraph
      + "<br>" + second_paragraph + "<br>" + third_paragraph
-         +"<br>" + fourth_paragraph + "<br>" + fifth_paragraph) 
+         +"<br>" + fourth_paragraph + "<br>" + fifth_paragraph)
 def generate_pdf(patient_dob,clinic_name,clinic_address,date_only,header,first,second,third,fourth,fourth_cont,fifth,fifth_cont,sixth,clinician_name,clinician_medicare,clinician_position):
     pdf = MyFPDF()
     pdf.add_page()
@@ -59,7 +64,7 @@ def generate_pdf(patient_dob,clinic_name,clinic_address,date_only,header,first,s
     image_path_footer = "footer.png"
     pdf.image(image_path, x=10, y=8, w=200)
     pdf.ln(65)  # move 85 down
- 
+
     # header
     pdf.cell(57.5, 10, txt=date_only,ln=1 , align="C")
     pdf.cell(74, 5, txt=header, ln=1, align= "C" )
@@ -74,7 +79,7 @@ def generate_pdf(patient_dob,clinic_name,clinic_address,date_only,header,first,s
     pdf.set_font('Arial', style = 'B', size = 0)
 
     pdf.cell(120,10,txt=second + "               DOB:" + patient_dob,ln=1, )
-    
+
     pdf.set_font('Arial', style = '', size = 0)
 
     pdf.cell(140,15,txt=third,ln=1, )
