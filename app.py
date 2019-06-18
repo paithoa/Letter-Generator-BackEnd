@@ -1,5 +1,7 @@
 from flask import Flask
 from flask import request
+from flask import Response
+from flask import send_file, send_from_directory, safe_join, abort,make_response
 from flask_cors import CORS,cross_origin
 from fpdf import FPDF,HTMLMixin
 
@@ -8,6 +10,8 @@ cors=CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 import datetime
 import json
+import codecs
+
 
 now = datetime.datetime.now()
 
@@ -15,8 +19,26 @@ now = datetime.datetime.now()
 @cross_origin()
 def post_data():
     if request.method == 'POST':
-        data = request.data
-        print(data)
+        data = request.get_data()
+        new_data = json.loads(data)
+        doctor_name = new_data['details']['doctorName']
+        doctor_name = doctor_name.split(' ')
+        doctor_first_name = doctor_name[0]
+        doctor_last_name = doctor_name[1]
+        clinic_name = new_data['details']['clinicName']
+        clinic_address = new_data['details']['clinicAddress']
+        client_name = new_data['details']['clientName']
+        client_gender = new_data['details']['clientGender']
+        client_dob = new_data['details']['clientDOB']
+        client_address = new_data['details']['clientAddress']
+        clinician_name = new_data['details']['clinicianName']
+        clinician_medicare = new_data['details']['clinicianMedicare']
+        clinician_position = new_data['details']['clinicianPosition']
+
+        summary = new_data['details']['summary']
+        #clinic_name = data.details.clinicName
+        generate_letter(doctor_first_name,doctor_last_name,clinic_name,clinic_address,client_name,client_address,client_gender,client_dob,clinician_name,clinician_medicare,clinician_position,summary)
+        print(doctor_first_name,doctor_last_name,clinic_name,clinic_address,client_name,clinician_medicare,clinician_position,summary)
         return "Posted"
 
     else:
@@ -27,19 +49,21 @@ def post_data():
 @app.route("/",methods=['GET'])
 @cross_origin()
 def get_data():
-    x =  '{ "name":"John", "age":30, "city":"New York"}'
-    data = "hello world"
-    return x
+    filename = "simple_demo.pdf"
+    headers = {"Content-Disposition":"attachment; filename=%s" % filename}
+    with open(filename,'r') as f:
+        body = f.read()
+    return make_response((body,headers))
 class MyFPDF(FPDF, HTMLMixin):
     pass
-def generate_letter():
+def generate_letter(doctor_first_name,doctor_last_name,clinic_name,clinic_address,client_name,client_address,client_gender,client_dob,clinician_name,clinician_medicare,clinician_position,summary):
     date = str(now)
     date_only = now.strftime("%Y/%m/%d")
 
     year = str(now.year)
-    doctor_first_name = "Freddy"
-    doctor_last_name = "Mercury "
-    gender = "Male"
+    doctor_first_name = doctor_first_name
+    doctor_last_name = doctor_last_name + " "
+    gender = client_gender
     if(gender == "Male"):
         gender_pronoun = "him"
 
@@ -47,17 +71,19 @@ def generate_letter():
         gender_pronoun = "her"
 
     # create gender function if m  -> male f-> female
-    clinic_name = "Quahog Hospital "
-    clinic_address = "Old Trafford road "
-    clinician_name = "Allied Health Name"
-    clinician_medicare = "1234567"
-    clinician_position = "Manager"
-    street_number = 123
-    street_name = "Abbey's Road"
-    patient_first_name = "John"
-    patient_last_name = "Doe"
-    patient_address = "West Virginia"
-    patient_dob = "30/12/1996"
+    clinic_name = clinic_name
+    clinic_address = clinic_address
+    clinician_name = clinician_name
+    clinician_medicare = clinician_medicare
+    clinician_position = clinician_position
+    clinic_address_split = clinic_address.split(" ")
+    street_number = clinic_address[0]
+    street_name = clinic_address[1] + " Road "
+    client_name = client_name.split(" ")
+    patient_first_name = client_name[0]
+    patient_last_name = client_name[1]
+    patient_address = client_address
+    patient_dob = client_dob
     header = "Dr. " + doctor_first_name + " " + doctor_last_name
     first_paragraph = "Dear Dr." + doctor_last_name
     second_paragraph = "Re: " + patient_first_name + " " +  patient_last_name+ " of " + patient_address
@@ -79,15 +105,17 @@ def generate_pdf(patient_dob,clinic_name,clinic_address,date_only,header,first,s
     image_path = "header.png"
     image_path_footer = "footer.png"
     pdf.image(image_path, x=10, y=8, w=200)
+    pdf.set_margins(27,0,0)
     pdf.ln(65)  # move 85 down
 
+
     # header
-    pdf.cell(57.5, 10, txt=date_only,ln=1 , align="C")
-    pdf.cell(74, 5, txt=header, ln=1, align= "C" )
-    pdf.cell(69, 5, txt=clinic_name, ln=1, align= "C" )
+    pdf.cell(57, 10, txt=date_only,ln=1 )
+    pdf.cell(77, 5, txt=header, ln=1 )
+    pdf.cell(69, 5, txt=clinic_name, ln=1 )
     pdf.set_margins(27,0,0)
 
-    pdf.cell(70, 5, txt=clinic_address, ln=1, align= "C" )
+    pdf.cell(70, 5, txt=clinic_address, ln=1 )
 
     #body
 
