@@ -53,7 +53,7 @@ def get_data():
     headers = {"Content-Disposition":"attachment; filename=%s" % filename}
     with open(filename,'r') as f:
         body = f.read()
-    return make_response((body,headers))
+    return "ok"
 class MyFPDF(FPDF, HTMLMixin):
     pass
 def generate_letter(doctor_first_name,doctor_last_name,clinic_name,clinic_address,client_name,client_address,client_gender,client_dob,clinician_name,clinician_medicare,clinician_position,summary):
